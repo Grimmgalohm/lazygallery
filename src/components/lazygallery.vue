@@ -1,21 +1,17 @@
 <template>
-  <div class="container">
-    <div v-lazyload class="suit" v-for="(item, index) of enlaces" v-bind:key="index">
-      <img :data-url="item.source" />
+  <div id="cont" class="container">
+    <div class="suit" v-for="(item, index) of paginador" v-bind:key="index">
+      <img loading="lazy" :data-url="item.source">
       <p>{{item.nombre}}</p>
     </div>
-
-    <!-- <div class="btns">
-      <a href="#"><button @click="currentPage--" v-if="currentPage != 1">Atrás</button></a>
-      <a href="#"><button @click="currentPage++" v-if="currentPage != totalPages">Siguiente</button></a>
-    </div> -->
+    <div class="btns">
+      <button @click="currentPage--" v-if="pages > 0"><a href="#">Anterior</a></button>
+      <button @click="currentPage++" v-if="pages"><a href="#">Siguiente</a></button>
+    </div>
   </div>
 </template>
 
 <script>
-
-import Lazyload from '../directives/lazyloader'
-
 export default {
   name: "LazyGallery",
   props: {
@@ -23,22 +19,20 @@ export default {
     itemsperpage: Number,
     imgOptions: Array
   },
-  directives:{
-    lazyload: Lazyload
-  },
   data(){
     return {
-      currentPage: 2
+      currentPage: 1
     }
   },
   mounted(){
-    this.watchImages(),
-    this.insertPagination(),
-    this.setKey()
+    this.watchImages(document.querySelectorAll('img[data-url]'))
+  },
+  beforeUpdate(){
+    this.updateDataUrl();
   },
   methods:{
-    watchImages(){
-      const images = document.querySelectorAll('[data-url]');
+    watchImages(val){
+      var images = val;
       //console.log(images);
       function preloadImage(img){
         const src = img.getAttribute("data-url");
@@ -46,6 +40,7 @@ export default {
           return;
           }
           img.src = src;
+          img.classList.add('showed');
       }
       
       const imgOptions = {
@@ -57,6 +52,7 @@ export default {
           if(!entry.isIntersecting){
               return;
           }else{
+              console.log(entry.target);
               preloadImage(entry.target);
               imgObserver.unobserve(entry.target);
           }
@@ -67,48 +63,26 @@ export default {
         imgObserver.observe(image);
       });
     },
-    setKey(){
-      var allDivs = document.querySelectorAll(".suit"); 
-      for(var i=0; i<=allDivs.length-1; i++){
-        var item = allDivs[i];
-        item.id = i;
-        item.classList.add("not_paginated");
-      }
-    },
-    insertPagination(){
-      var allDivs = document.querySelectorAll(".suit");
-      
-      console.log(allDivs);
-      var page = this.currentPage;
-      //console.log(page);
-      let start = this.itemsperpage * (page - 1);
-      console.log(start);
-      let end = start + this.itemsperpage;
-      console.log(end);
-
-      for(var i = start; i<=end; i++){
-        console.log(i);
-      }
-      // let paginatedItems = allDivs.slice(5, 11);
-      //console.log(paginatedItems);
+    updateDataUrl(){
+      return this.watchImages(document.querySelectorAll('img[data-url]'));
     }
   },
   computed:{
-    //   paginador() {
-    //   //Traer los elementos que se van a mostrar, si están en un arreglo.
-    //   var elements = this.enlaces;
-    //   //console.log(elements)
-    //   var page = this.currentPage;
-    //   //console.log(page);
-    //   let start = this.itemsperpage * (page - 1);
-    //   //console.log(start);
-    //   let end = start + this.itemsperpage;
-    //   //console.log(end);
-    //   let paginatedItems = elements.slice(start, end);
-    //   //console.log(paginatedItems);
-    //   return paginatedItems;
-    // },
-    totalPages() {
+      paginador() {
+      //Traer los elementos que se van a mostrar, si están en un arreglo.
+      var elements = this.enlaces;
+      //console.log(elements)
+      var page = this.currentPage;
+      //console.log(page);
+      let start = this.itemsperpage * (page - 1);
+      //console.log(start);
+      let end = start + this.itemsperpage;
+      //console.log(end);
+      let paginatedItems = elements.slice(start, end);
+      //console.log(paginatedItems);
+      return paginatedItems;
+    },
+    pages() {
       var total = Math.ceil(this.enlaces.length / this.itemsperpage);
       //console.log(total);
       return total;

@@ -2,7 +2,8 @@
   
   <LazyGallery 
   :enlaces="items" 
-  :itemsperpage="options"></LazyGallery>
+  :itemsperpage="options"
+  ></LazyGallery>
   
 </template>
 
